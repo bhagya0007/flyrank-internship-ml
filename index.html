@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlyRank ML Capstone — Refresh / Content Opportunity Scoring</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.65; margin: 0; background:#f6f7fb; color:#1f2937; }
+header { background:#111827; color:white; padding:48px 20px; }
+header .wrap, main { max-width:900px; margin:auto; }
+h1 { margin-top:0; } h2 { margin-top:42px; border-bottom:1px solid #ddd; padding-bottom:8px; }
+main { background:white; margin:30px auto; padding:40px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.08); }
+a { color:#2563eb; } pre { background:#111827; color:#f9fafb; padding:16px; overflow:auto; }
+.note { background:#eff6ff; padding:16px; border-left:4px solid #2563eb; border-radius:6px; }
+footer { max-width:900px; margin:30px auto; padding:20px; color:#6b7280; }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Google Search Ranking & Discoverability Capstone</h1>
+<p>FlyRank Internship ML — Refresh / Content Opportunity Scoring</p>
+</div></header>
+<main>
+<div class="note">
+<strong>Research scope:</strong> This project provides decision-support rankings for human review. It does not claim to predict Google's algorithm or prove that refreshing a page causes improved rankings or traffic.
+</div>
+<h1>Capstone Report — Refresh / Content Opportunity Scoring</h1>
+<li>**Author:** Bhagya Varshney</li>
+<li>**Lane:** Refresh / Content Opportunity Scoring</li>
+<li>**Repo:** Replace with your submitted repository URL</li>
+<li>**Date:** Generated from the executed capstone notebook</li>
+<p>&gt; This report mirrors the executed notebook. All claims are observational and intended for decision support.</p>
+<h2>1. Problem framing</h2>
+<p>The decision is which webpages should enter editorial review first. One row represents one webpage, and the output is a ranked refresh-priority score with an action label. A content or SEO editor can use the queue to inspect search intent, freshness, content quality, and on-page metadata. A wrong positive can waste editorial time; a wrong negative can leave a declining page unreviewed. Data and ML are useful because the dataset contains many pages and multiple signals that are difficult to combine consistently with one manual rule.</p>
+<h2>2. Data safety</h2>
+<p>The analysis uses `content_refresh_anonymized.csv`. Pseudonymous `client_id` and `content_id` fields are not model features; `client_id` is used only for grouped validation and `content_id` only for the final review queue. `trend_direction` and `trend_pct` are deliberately excluded as label-derived fields. The target is constructed from recent and previous 30-day session windows, so those session windows and matching 30-day impression/click comparison fields are also excluded from the feature set. No client names, domains, URLs, private queries, or credentials are used.</p>
+<h2>3. Baseline</h2>
+<p>The baseline is a transparent additive score. It gives points for low CTR, poor average position, low engagement, stale content, and high search volume. All thresholds are estimated from the training split only. On the grouped validation split, baseline Precision@10 was **0.40** and Precision@20 was **0.45**.</p>
+<h2>4. Model / analysis</h2>
+<p>A Random Forest classifier ranks an observed decline proxy. The proxy is positive when `sessions_last_30d` is at least 20% lower than `sessions_prev_30d`, with a non-zero previous window. This is not a direct refresh-success label. The model uses allowed numeric and categorical search, engagement, freshness, content, and metadata features while excluding IDs, trend fields, and the 30-day comparison fields used directly in target construction.</p>
+<h2>5. Evaluation</h2>
+<p>Validation is grouped by pseudonymous client so a client&#x27;s rows do not appear in both training and validation. The validation base rate was **0.3021**. The model and baseline were evaluated on the same held-out rows. Model Precision@10 was **0.90** versus baseline **0.40**; model Precision@20 was **0.90** versus baseline **0.45**. Model ROC-AUC was **0.5013** versus baseline **0.5800**. Model Average Precision was **0.3044** versus baseline **0.3589**.</p>
+<p>The error analysis checks false positives among the top-ranked rows. These errors are expected because the proxy is imperfect and the dataset does not include every factor that may affect performance.</p>
+<h2>6. Interpretation</h2>
+<p>The most important observed model signals included: numeric__scroll_rate, numeric__char_count, numeric__word_count, numeric__content_age_days, numeric__users_90d. Feature importance describes how the trained model used the available variables; it does not establish a causal effect. A useful negative result is that a high model score alone is not enough to justify automatic content changes.</p>
+<h2>7. Recommendation</h2>
+<p>Use the ranked queue as a human-review worklist. High-scoring pages are labelled `REFRESH_NOW`; the current top-20 queue contains action labels based on the held-out model scores. Each recommendation includes reason codes such as low CTR, poor position, low engagement, stale content, or high search volume. The editor should verify the page before changing it. Confidence is directional, and a recommendation may be wrong if the observed decline does not persist, the proxy does not represent a true refresh need, or an unobserved factor explains the pattern.</p>
+<h2>8. Reproducibility</h2>
+<p>Use Python with `pandas`, `numpy`, `scikit-learn`, and `matplotlib`. Run `capstone_completed.ipynb` from top to bottom with `content_refresh_anonymized.csv` available locally or uploaded in Colab. The random seed is **42**. The notebook generates the model-vs-baseline table, feature-importance table/chart, leakage audit, and top-20 recommendation CSV.</p>
+<p>---</p>
+<h3>Claims checklist</h3>
+<li>Claims are observed, measured, directional, and decision-support oriented.</li>
+<li>No causal claim is made about Google rankings or refresh impact.</li>
+<li>The validation base rate is shown next to ranking metrics.</li>
+<li>IDs are not predictive features.</li>
+<li>Numbers in this report come from the executed notebook.</li>
+</main>
+<footer>
+<p>Repository: <a href="https://github.com/bhagya0007/flyrank-internship-ml">https://github.com/bhagya0007/flyrank-internship-ml</a></p>
+<p>Generated for the FlyRank ML Capstone submission.</p>
+</footer>
+</body>
+</html>
